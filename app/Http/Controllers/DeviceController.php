@@ -70,14 +70,25 @@ class DeviceController extends Controller
             return response()->json($purhase_result, 200);
         }
 
-        Subscription::firstOrCreate([
+        $is_subscribed = Subscription::where([
+            'device_id' => $authorized_device->id,
+            'receipt' => $request->receipt,
+        ])->first();
+
+        if ($is_subscribed) {
+            $my_status = 'renewed';
+        } else {
+            $my_status = 'started';
+        }
+
+        Subscription::updateOrCreate([
             'device_id' => $authorized_device->id,
             'receipt' => $request->receipt,
         ], [
             'device_id' => $authorized_device->id,
             'receipt' => $request->receipt,
             'expire_date' => $purhase_result['expire-date'],
-            'status' => 'started'
+            'status' => $my_status
         ]);
 
         return response()->json($purhase_result, 201);
