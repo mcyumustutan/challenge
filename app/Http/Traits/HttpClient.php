@@ -3,6 +3,7 @@
 
 namespace App\Http\Traits;
 
+use Illuminate\Support\Arr;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
@@ -10,6 +11,11 @@ trait HttpClient
 {
 
     protected $baseServer = null;
+
+    function __construct()
+    {
+        $this->baseServer = config('app.baseServer');
+    }
 
     function get(string $path, array $params = [])
     {
@@ -25,8 +31,9 @@ trait HttpClient
                 "token" => request()->token,
                 "accessToken" => request()->token
             ];
-            $params = array_merge($default_params, $params);
+            $params = Arr::collapse([$default_params, $params]);
             $query = http_build_query($params);
+            
             $response = $client->get($this->baseServer . "{$path}?{$query}");
 
             $body = $response->getBody()->getContents();
@@ -37,14 +44,14 @@ trait HttpClient
             $data = $response->getBody()->getContents();
             $data = json_decode($data, true);
 
-            if (array_key_exists('error', $data)) {
-                if (is_array($data['error']) && array_key_exists('message', $data['error'])) {
-                    return abort($response->getStatusCode(), $data['error']['message']);
+            if (Arr::exists('error', $data)) {
+                if (Arr::accessible($data['error']) && Arr::exists('message', $data['error'])) {
+                    abort($response->getStatusCode(), $data['error']['message']);
                 } else {
-                    return abort($response->getStatusCode(), $data['error']);
+                    abort($response->getStatusCode(), $data['error']);
                 }
             } else {
-                return abort($response->getStatusCode(), "Eksik Parametre: " . json_encode($data, true));
+                abort($response->getStatusCode(), "Eksik Parametre: " . json_encode($data, true));
             }
         }
     }

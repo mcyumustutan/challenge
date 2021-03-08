@@ -2,28 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DeviceRegisterRequest;
 use App\Models\Device;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use App\Http\Traits\HttpClient;
 use App\Models\Subscription;
-use Illuminate\Auth\Middleware\Authorize;
+use Illuminate\Support\Str;
+
 
 class DeviceController extends Controller
 {
 
     use HttpClient;
 
-    public function register(Request $request)
+    public function register(DeviceRegisterRequest $request)
     {
 
-        $attr = $request->validate([
-            'uid' => 'required|string|max:255',
-            'appId' => 'required|string|max:255',
-            'language' => 'required|string|max:255',
-            'os' => 'required|string|max:255',
-
-        ]);
+        $attr = $request->validated();
 
 
         if (!in_array($attr['os'], ['ios', 'android'])) {
@@ -47,7 +42,7 @@ class DeviceController extends Controller
         $device->tokens()->delete();
 
         //create new token
-        $token = $device->createToken($attr['uid'] . '_' . $attr['appId'] . '-token')->plainTextToken;
+        $token = $device->createToken(Str::of($attr['uid'])->append('_')->append($attr['appId'])->append('-token'))->plainTextToken;
 
         return response()->json([
             'register' => 'OK',
@@ -69,7 +64,7 @@ class DeviceController extends Controller
         }
 
 
-        $purhase_result = $this->get("/" . $authorized_device->os, ['receipt' => $request->receipt]);
+        $purhase_result = $this->get(Str::start($authorized_device->os, '/'), ['receipt' => $request->receipt]);
 
         if (!$purhase_result["status"]) {
             return response()->json($purhase_result, 200);

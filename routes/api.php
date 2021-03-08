@@ -17,15 +17,14 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
+use App\Http\Controllers\DeviceController;
 
-// Route::middleware('auth:api')->resource('device', App\Http\Controllers\DeviceController::class);
-Route::post('/device/register', [App\Http\Controllers\DeviceController::class, 'register']);
+Route::post('/device/register', [DeviceController::class, 'register']);
 
 Route::group([
-    'prefix'=>'device',
+    'prefix' => 'device',
     'middleware' => ['auth:sanctum']
 ], function () {
-    Route::get('/purchase', [App\Http\Controllers\DeviceController::class, 'purchase']);
-    Route::get('/checkSubscription', [App\Http\Controllers\DeviceController::class, 'checkSubscription']);
+    Route::get('/purchase', [DeviceController::class, 'purchase']);
+    Route::get('/checkSubscription', [DeviceController::class, 'checkSubscription']);
 });
- 
