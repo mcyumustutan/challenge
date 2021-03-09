@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Traits\HttpClient;
 use App\Models\Subscription;
 use Illuminate\Support\Str;
+use App\Libraries\Enum\Os;
 
 
 class DeviceController extends Controller
@@ -21,7 +22,7 @@ class DeviceController extends Controller
         $attr = $request->validated();
 
 
-        if (!in_array($attr['os'], ['ios', 'android'])) {
+        if (!in_array($attr['os'], Os::all())) {
             return response()->json([
                 'message' => "This OS ({$attr['os']}) not supported!"
             ], 200);
@@ -55,8 +56,7 @@ class DeviceController extends Controller
 
         $authorized_device = auth()->user();
 
-
-        if (!in_array($authorized_device->os, ['ios', 'android'])) {
+        if (!in_array($authorized_device->os, Os::all())) {
             return response()->json([
                 'device' => $authorized_device,
                 'message' => "This OS ({$authorized_device->os}) not supported!"
